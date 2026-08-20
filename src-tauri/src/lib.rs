@@ -11,11 +11,18 @@ mod users;
 use chrono::Utc;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
-use std::{collections::BTreeMap, path::PathBuf, sync::Mutex};
+use std::{
+    collections::BTreeMap,
+    path::{Path, PathBuf},
+    sync::Mutex,
+};
 use tauri::{Manager, State};
 use thiserror::Error;
 
 struct DatabaseState(Mutex<Option<PathBuf>>);
+
+const PORTABLE_MARKER: &str = "portable.mode";
+const PORTABLE_DATA_DIRECTORY: &str = "portable-data";
 
 const WEEK_DAYS: [&str; 7] = [
     "الأحد",
@@ -187,6 +194,28 @@ fn current_path(state: &State<DatabaseState>) -> Result<PathBuf, AppError> {
         .ok_or(AppError::DatabaseNotOpen)
 }
 
+fn portable_data_directory(executable: &Path) -> Option<PathBuf> {
+    let directory = executable.parent()?;
+    directory
+        .join(PORTABLE_MARKER)
+        .is_file()
+        .then(|| directory.join(PORTABLE_DATA_DIRECTORY))
+}
+
+fn app_data_directory(app: &tauri::AppHandle) -> Result<PathBuf, AppError> {
+    if let Ok(executable) = std::env::current_exe() {
+        if let Some(directory) = portable_data_directory(&executable) {
+            std::fs::create_dir_all(&directory)
+                .map_err(|error| AppError::AppData(error.to_string()))?;
+            return Ok(directory);
+        }
+    }
+
+    app.path()
+        .app_data_dir()
+        .map_err(|error| AppError::AppData(error.to_string()))
+}
+
 #[tauri::command]
 fn create_school_database(
     app: tauri::AppHandle,
@@ -195,10 +224,7 @@ fn create_school_database(
 ) -> Result<SchoolDatabase, AppError> {
     let settings = normalize_settings(settings);
     validate_settings(&settings)?;
-    let directory = app
-        .path()
-        .app_data_dir()
-        .map_err(|error| AppError::AppData(error.to_string()))?;
+    let directory = app_data_directory(&app)?;
     std::fs::create_dir_all(&directory).map_err(|error| AppError::AppData(error.to_string()))?;
     let path = directory.join(format!(
         "{}-{}.jadwali.db",
@@ -481,10 +507,7 @@ fn restore_backup(
     state: State<DatabaseState>,
     confirmed: bool,
 ) -> Result<Option<files::FileOperationResult>, AppError> {
-    let app_data = app
-        .path()
-        .app_data_dir()
-        .map_err(|error| AppError::AppData(error.to_string()))?;
+    let app_data = app_data_directory(&app)?;
     files::restore_backup(&current_path(&state)?, &app_data, confirmed)
 }
 
@@ -493,10 +516,7 @@ fn get_backup_overview(
     app: tauri::AppHandle,
     state: State<DatabaseState>,
 ) -> Result<files::BackupOverview, AppError> {
-    let app_data = app
-        .path()
-        .app_data_dir()
-        .map_err(|error| AppError::AppData(error.to_string()))?;
+    let app_data = app_data_directory(&app)?;
     files::overview(&current_path(&state)?, &app_data)
 }
 
@@ -652,5 +672,25 @@ mod tests {
         let normalized = normalize_settings(old_settings);
         assert_eq!(normalized.periods_by_day["الأحد"], 7);
         assert_eq!(normalized.periods_by_day["الخميس"], 7);
+    }
+
+    #[test]
+    fn enables_portable_storage_when_marker_is_next_to_executable() {
+        let temporary = tempfile::tempdir().unwrap();
+        let executable = temporary.path().join("AI Jadwali Desktop.exe");
+        std::fs::write(temporary.path().join(PORTABLE_MARKER), "portable\n").unwrap();
+
+        assert_eq!(
+            portable_data_directory(&executable),
+            Some(temporary.path().join(PORTABLE_DATA_DIRECTORY))
+        );
+    }
+
+    #[test]
+    fn keeps_standard_storage_without_portable_marker() {
+        let temporary = tempfile::tempdir().unwrap();
+        let executable = temporary.path().join("AI Jadwali Desktop.exe");
+
+        assert_eq!(portable_data_directory(&executable), None);
     }
 }

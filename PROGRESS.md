@@ -196,3 +196,11 @@ Status: packaging configuration complete; macOS bundle validated; Windows instal
 - `npm audit`: passed with 0 known vulnerabilities.
 - `npm run bundle:macos`: produced a 13 MB native application and a 4.8 MB arm64 DMG.
 - Bundle metadata verified identifier `com.aijadwali.desktop`, version `1.0.0`, education category, and the configured Jadwali icon.
+
+## Portable Windows edition — Version 1.0.1
+
+- Added marker-based Portable mode: when `portable.mode` is beside the executable, databases and automatic backups use the adjacent `portable-data` directory.
+- Added tests covering Portable and standard storage selection.
+- Added `scripts/package-portable.ps1` to package the release executable, Arabic usage notes, and marker into a ZIP.
+- Updated the Windows workflow to publish a separate `AI-Jadwali-Desktop-1.0.1-Portable-Windows-x64` artifact.
+- Updated the official GitHub Actions to their Node.js 24-compatible v7 releases.
