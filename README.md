@@ -37,6 +37,8 @@ npm run build
 npm run tauri build
 ```
 
+إرشادات تجهيز الإصدار ومثبت Windows موثقة في [`RELEASE.md`](RELEASE.md).
+
 ### الخصوصية
 
 لا يتضمن المشروع تسجيل دخول أو مزامنة أو اتصالات بخادم. الواجهة لا تصل إلى قاعدة البيانات أو نظام الملفات مباشرة؛ تمر العمليات المحلية عبر أوامر Rust محددة ومتحقق منها.
@@ -75,6 +77,8 @@ npm run test:e2e
 npm run build
 npm run tauri build
 ```
+
+Release packaging and Windows installer instructions are documented in [`RELEASE.md`](RELEASE.md).
 
 ### Architecture and privacy
 

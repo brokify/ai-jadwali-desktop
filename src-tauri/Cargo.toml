@@ -1,7 +1,7 @@
 [package]
 name = "ai-jadwali-desktop"
-version = "0.1.0"
-description = "Local-first school timetable desktop application"
+version = "1.0.0"
+description = "Local-first Arabic school timetable desktop application"
 authors = ["AI Jadwali Desktop contributors"]
 edition = "2021"
 

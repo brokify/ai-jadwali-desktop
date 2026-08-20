@@ -167,3 +167,31 @@ Status: complete and locally validated on macOS (Apple Silicon).
 - `npm run test:e2e`: passed (critical path including local user creation).
 - `npm run build`: passed with the user-management page in a lazy route bundle.
 - `npm run tauri dev`: compiled and launched the desktop executable with the new migration and IPC commands.
+
+## Release preparation — Version 1.0.0
+
+Status: packaging configuration complete; macOS bundle validated; Windows installer build prepared for execution on Windows.
+
+### Completed
+
+- Synchronized version `1.0.0` across npm, Cargo, and Tauri metadata.
+- Connected the complete Jadwali icon set to application and installer bundles.
+- Added education-category, publisher, copyright, and local-first package descriptions.
+- Configured Windows NSIS/MSI packaging, current-user installation, LZMA compression, offline WebView2 installation, and downgrade prevention.
+- Added repeatable macOS and Windows bundle scripts plus an automated release-metadata verifier.
+- Added a guarded PowerShell pipeline for clean Windows builds, tests, audits, and installer generation.
+- Added Windows prerequisites, artifact locations, acceptance testing, and signing guidance in `RELEASE.md`.
+- Produced and inspected the macOS `.app` and `AI Jadwali Desktop_1.0.0_aarch64.dmg` artifacts.
+
+### Platform boundary
+
+- Final `.exe` and `.msi` artifacts must be built and acceptance-tested on Windows 10/11 with MSVC and the Windows SDK. macOS cannot provide a trustworthy final verification of Windows-native installers.
+
+### Validation
+
+- `npm run release:verify`: passed with synchronized versions, icons, CSP, and offline Windows settings.
+- `npm run check`: passed (15 frontend tests, production build, and 16 Rust/SQLite tests).
+- `npm run test:e2e`: passed (complete critical local workflow).
+- `npm audit`: passed with 0 known vulnerabilities.
+- `npm run bundle:macos`: produced a 13 MB native application and a 4.8 MB arm64 DMG.
+- Bundle metadata verified identifier `com.aijadwali.desktop`, version `1.0.0`, education category, and the configured Jadwali icon.
