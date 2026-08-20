@@ -1,6 +1,10 @@
 mod db;
 mod entities;
+mod files;
 mod imports;
+mod preferences;
+mod reports;
+mod substitutions;
 mod timetables;
 
 use chrono::Utc;
@@ -419,6 +423,114 @@ fn set_timetable_status(
     timetables::set_status(&mut connection, &version_id, &status)
 }
 
+#[tauri::command]
+fn get_substitution_overview(
+    state: State<DatabaseState>,
+    absence_date: String,
+    absent_teacher_id: String,
+) -> Result<substitutions::SubstitutionOverview, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    substitutions::overview(&connection, &absence_date, &absent_teacher_id)
+}
+
+#[tauri::command]
+fn create_substitution(
+    state: State<DatabaseState>,
+    request: substitutions::SubstitutionRequest,
+) -> Result<substitutions::SubstitutionRecord, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    substitutions::create(&mut connection, request)
+}
+
+#[tauri::command]
+fn get_reports(
+    state: State<DatabaseState>,
+    version_id: Option<String>,
+) -> Result<reports::ReportsOverview, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    reports::overview(&connection, version_id.as_deref())
+}
+
+#[tauri::command]
+fn create_pdf_export(
+    request: files::PdfExportRequest,
+) -> Result<Option<files::FileOperationResult>, AppError> {
+    files::save_pdf(request)
+}
+
+#[tauri::command]
+fn create_csv_export(
+    state: State<DatabaseState>,
+    request: files::CsvExportRequest,
+) -> Result<Option<files::FileOperationResult>, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    files::save_csv(&connection, request)
+}
+
+#[tauri::command]
+fn create_backup(
+    state: State<DatabaseState>,
+) -> Result<Option<files::FileOperationResult>, AppError> {
+    files::create_backup(&current_path(&state)?)
+}
+
+#[tauri::command]
+fn restore_backup(
+    app: tauri::AppHandle,
+    state: State<DatabaseState>,
+    confirmed: bool,
+) -> Result<Option<files::FileOperationResult>, AppError> {
+    let app_data = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| AppError::AppData(error.to_string()))?;
+    files::restore_backup(&current_path(&state)?, &app_data, confirmed)
+}
+
+#[tauri::command]
+fn get_backup_overview(
+    app: tauri::AppHandle,
+    state: State<DatabaseState>,
+) -> Result<files::BackupOverview, AppError> {
+    let app_data = app
+        .path()
+        .app_data_dir()
+        .map_err(|error| AppError::AppData(error.to_string()))?;
+    files::overview(&current_path(&state)?, &app_data)
+}
+
+#[tauri::command]
+fn open_data_folder(state: State<DatabaseState>) -> Result<(), AppError> {
+    let path = current_path(&state)?;
+    files::open_folder(
+        path.parent()
+            .ok_or_else(|| AppError::File("مجلد البيانات غير صالح".into()))?,
+    )
+}
+
+#[tauri::command]
+fn get_app_preferences(
+    state: State<DatabaseState>,
+) -> Result<preferences::AppPreferences, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    preferences::get(&connection)
+}
+
+#[tauri::command]
+fn save_app_preferences(
+    state: State<DatabaseState>,
+    preferences: preferences::AppPreferences,
+) -> Result<preferences::AppPreferences, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    preferences::save(&connection, preferences)
+}
+
+#[tauri::command]
+fn get_audit_logs(state: State<DatabaseState>) -> Result<Vec<preferences::AuditRecord>, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    preferences::audit_logs(&connection)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -447,7 +559,19 @@ pub fn run() {
             undo_timetable_change,
             redo_timetable_change,
             revert_timetable_version,
-            set_timetable_status
+            set_timetable_status,
+            get_substitution_overview,
+            create_substitution,
+            get_reports,
+            create_pdf_export,
+            create_csv_export,
+            create_backup,
+            restore_backup,
+            get_backup_overview,
+            open_data_folder,
+            get_app_preferences,
+            save_app_preferences,
+            get_audit_logs
         ])
         .run(tauri::generate_context!())
         .expect("error while running AI Jadwali Desktop");

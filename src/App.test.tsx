@@ -45,3 +45,15 @@ test("generates a local timetable and opens the weekly grid", async () => {
   expect(await screen.findByRole("heading", { name: "الجداول" })).toBeInTheDocument();
   expect(screen.getAllByText("الأول أ").length).toBeGreaterThan(0);
 });
+
+test("simulates a local backup in browser preview mode", async () => {
+  render(<MemoryRouter initialEntries={["/backup"]}><App /></MemoryRouter>);
+  fireEvent.click(await screen.findByRole("button", { name: "إنشاء نسخة الآن" }));
+  expect(await screen.findByText(/تم إنشاء النسخة الاحتياطية/)).toBeInTheDocument();
+});
+
+test("saves local application preferences", async () => {
+  render(<MemoryRouter initialEntries={["/settings"]}><App /></MemoryRouter>);
+  fireEvent.click(await screen.findByRole("button", { name: "حفظ التفضيلات" }));
+  expect(await screen.findByText("حُفظت تفضيلات التطبيق محليًا.")).toBeInTheDocument();
+});

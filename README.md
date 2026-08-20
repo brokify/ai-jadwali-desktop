@@ -4,7 +4,7 @@
 
 تطبيق محلي أولًا لإدارة وإنشاء الجداول الدراسية. يعمل كتطبيق Tauri دون خدمات سحابية؛ تحفظ بيانات كل مدرسة في ملف SQLite محلي داخل بيانات التطبيق.
 
-النسخة الحالية تدعم إنشاء وفتح ملف مدرسة، إعداد عدد الحصص لكل يوم، وإدارة البيانات واستيراد CSV/XLSX/XLS. كما تتضمن قيود عدم التوفر والتفضيلات، محرك جدولة محليًا خلف `SolverAdapter`، تشخيص التعارضات، نسخ جداول محلية، شبكة أسبوعية حسب الشعبة أو المعلم أو القاعة، نقل الحصص، undo/redo، النشر والأرشفة والاستعادة.
+النسخة الحالية تدعم إنشاء وفتح ملف مدرسة، إعداد عدد الحصص لكل يوم، وإدارة البيانات واستيراد CSV/XLSX/XLS. كما تتضمن قيود عدم التوفر والتفضيلات، محرك جدولة محليًا خلف `SolverAdapter`، تشخيص التعارضات، نسخ جداول محلية، شبكة أسبوعية حسب الشعبة أو المعلم أو القاعة، نقل الحصص، undo/redo، النشر والأرشفة والاستعادة. وتكتمل الدورة بإدارة البدائل، تقارير حمل المعلمين واستخدام القاعات، تصدير PDF وCSV والطباعة، والنسخ الاحتياطي والاستعادة الآمنة.
 
 ### المتطلبات
 
@@ -45,7 +45,7 @@ npm run tauri build
 
 A local-first desktop application for creating and managing school timetables. It runs as a Tauri app without cloud services. Each school's data is stored in a local SQLite file under the operating system's application-data directory.
 
-The current build supports school files, per-day period counts, local data management, and CSV/XLSX/XLS imports. It now also includes availability and preference constraints, a local solver behind `SolverAdapter`, conflict diagnostics, persisted timetable versions, weekly section/teacher/room views, validated lesson moves, undo/redo, publish/archive states, and version reverts.
+The current build supports school files, per-day period counts, local data management, and CSV/XLSX/XLS imports. It also includes availability and preference constraints, a local solver behind `SolverAdapter`, conflict diagnostics, persisted timetable versions, weekly section/teacher/room views, validated lesson moves, undo/redo, publish/archive states, and version reverts. The workflow is completed by absence substitutions, teacher-load and room-usage reports, PDF/CSV/print export, and validated backup and restore.
 
 ### Requirements
 

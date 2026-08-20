@@ -91,6 +91,43 @@ export type GenerateTimetableRequest = {
   entries: Omit<TimetableEntry, "id">[];
 };
 export type MoveLessonRequest = { versionId: string; entryId: string; weekday: number; periodIndex: number };
+export type CandidateTeacher = LookupItem;
+export type SubstitutionOpportunity = {
+  entryId: string;
+  sectionName: string;
+  subjectName: string;
+  absentTeacherId: string;
+  absentTeacherName: string;
+  weekday: number;
+  periodIndex: number;
+  candidates: CandidateTeacher[];
+};
+export type SubstitutionRecord = {
+  id: string;
+  absenceDate: string;
+  sectionName: string;
+  subjectName: string;
+  absentTeacherName: string;
+  substituteTeacherName: string | null;
+  periodIndex: number;
+  notes: string | null;
+  createdAt: string;
+};
+export type SubstitutionOverview = { versionId: string | null; opportunities: SubstitutionOpportunity[]; history: SubstitutionRecord[] };
+export type SubstitutionRequest = { timetableEntryId: string; absentTeacherId: string; substituteTeacherId?: string; absenceDate: string; notes?: string };
+export type LoadReport = { id: string; name: string; scheduled: number; target: number | null; utilizationPercent: number };
+export type SectionReport = { id: string; name: string; required: number; scheduled: number };
+export type ReportsOverview = {
+  versionId: string | null;
+  teacherLoads: LoadReport[];
+  roomUsage: LoadReport[];
+  sectionLoads: SectionReport[];
+  quality: { versionName: string; versionStatus: string; solverStatus: string | null; penaltyScore: number; scheduledPeriods: number; requiredPeriods: number; unfulfilledPeriods: number; activeConstraints: number } | null;
+};
+export type FileOperationResult = { fileName: string; sizeBytes: number };
+export type BackupOverview = { currentFileName: string; automaticBackups: { fileName: string; sizeBytes: number; modifiedAt: string | null }[] };
+export type AppPreferences = { confirmBeforePublish: boolean; defaultExportView: "section" | "teacher" | "room"; compactTimetable: boolean };
+export type AuditRecord = { id: string; action: string; entityType: string; createdAt: string };
 
 export const desktopApi = {
   createSchoolDatabase: (settings: SchoolSettings) =>
@@ -125,6 +162,18 @@ export const desktopApi = {
   redoTimetableChange: (versionId: string) => invoke<TimetableOverview>("redo_timetable_change", { versionId }),
   revertTimetableVersion: (sourceVersionId: string, name: string) => invoke<TimetableOverview>("revert_timetable_version", { sourceVersionId, name }),
   setTimetableStatus: (versionId: string, status: TimetableVersion["status"]) => invoke<TimetableOverview>("set_timetable_status", { versionId, status }),
+  getSubstitutionOverview: (absenceDate: string, absentTeacherId: string) => invoke<SubstitutionOverview>("get_substitution_overview", { absenceDate, absentTeacherId }),
+  createSubstitution: (request: SubstitutionRequest) => invoke<SubstitutionRecord>("create_substitution", { request }),
+  getReports: (versionId?: string) => invoke<ReportsOverview>("get_reports", { versionId }),
+  createPdfExport: (fileName: string, bytesBase64: string) => invoke<FileOperationResult | null>("create_pdf_export", { request: { fileName, bytesBase64 } }),
+  createCsvExport: (versionId: string, viewType: "section" | "teacher" | "room", filterId: string, fileName: string) => invoke<FileOperationResult | null>("create_csv_export", { request: { versionId, viewType, filterId, fileName } }),
+  createBackup: () => invoke<FileOperationResult | null>("create_backup"),
+  restoreBackup: (confirmed: boolean) => invoke<FileOperationResult | null>("restore_backup", { confirmed }),
+  getBackupOverview: () => invoke<BackupOverview>("get_backup_overview"),
+  openDataFolder: () => invoke<void>("open_data_folder"),
+  getAppPreferences: () => invoke<AppPreferences>("get_app_preferences"),
+  saveAppPreferences: (preferences: AppPreferences) => invoke<AppPreferences>("save_app_preferences", { preferences }),
+  getAuditLogs: () => invoke<AuditRecord[]>("get_audit_logs"),
 };
 
 export function isTauriRuntime() {

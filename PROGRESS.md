@@ -118,6 +118,27 @@ Status: complete and locally validated on macOS (Apple Silicon).
 - `npm audit`: passed with 0 known vulnerabilities.
 - `npm run tauri dev`: compiled and launched the desktop executable with the scheduling IPC commands.
 
-### Deferred to phase 5
+## Phase 5 — Desktop operations and release completion
 
-- Substitutions, reports, PDF/CSV/print exports, backup/restore, and final desktop polish.
+Status: complete and locally validated on macOS (Apple Silicon).
+
+### Completed
+
+- Added absence-driven substitutions with date-aware lesson lookup, collision and availability checks, ranked replacement candidates, notes, history, and audit events.
+- Added timetable reports for teacher load, room usage, section coverage, completion, hard conflicts, and soft-penalty quality.
+- Added RTL PDF generation, filtered UTF-8 CSV export, and a print-optimized report layout.
+- Added Rust-native save/open dialogs so the renderer never receives unrestricted filesystem access.
+- Added SQLite backup with WAL checkpointing, integrity validation, automatic pre-restore safety copies, and explicit restore confirmation.
+- Added local application preferences and a recent audit-log view.
+- Added responsive Arabic RTL interfaces for substitutions, reports, backup/restore, and settings.
+- Kept PDF libraries route- and action-lazy-loaded to preserve a compact startup bundle.
+- Extended the critical browser workflow through generation, timetable editing, reporting, PDF export, and backup simulation.
+
+### Validation
+
+- `npm test`: passed (14 unit and UI tests).
+- `cargo test --manifest-path src-tauri/Cargo.toml`: passed (14 Rust/SQLite tests).
+- `npm run test:e2e`: passed (1 complete critical-path Playwright flow).
+- `npm run build`: passed with route-specific bundles.
+- `npm audit`: passed with 0 known vulnerabilities.
+- `npm run tauri dev`: compiled and launched the final desktop executable successfully.
