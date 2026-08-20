@@ -1,11 +1,11 @@
 import { Navigate, Route, Routes } from "react-router";
 import { AppShell } from "./components/AppShell";
 import { DashboardPage } from "./pages/DashboardPage";
+import { DataPage } from "./pages/DataPage";
 import { PlaceholderPage } from "./pages/PlaceholderPage";
 import { SchoolSetupPage } from "./pages/SchoolSetupPage";
 
 const pages = [
-  ["data", "البيانات", "إدارة الصفوف والشعب والمواد والمعلمين والقاعات ومتطلبات الحصص."],
   ["constraints", "القيود", "تحديد القيود الصارمة والمرنة لمحرك الجدولة."],
   ["generate", "توليد الجدول", "تشغيل محرك الجدولة ومراجعة النتائج والتعارضات."],
   ["timetables", "الجداول", "عرض نسخ الجداول الأسبوعية وتعديلها ونشرها."],
@@ -22,6 +22,7 @@ export function App() {
       <Route element={<AppShell />}>
         <Route index element={<DashboardPage />} />
         <Route path="school" element={<SchoolSetupPage />} />
+        <Route path="data" element={<DataPage />} />
         {pages.map(([path, title, description]) => (
           <Route
             key={path}

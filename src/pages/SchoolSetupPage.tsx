@@ -1,5 +1,5 @@
 import { useState, type FormEvent } from "react";
-import { Database, LoaderCircle, Save } from "lucide-react";
+import { Database, FolderOpen, LoaderCircle, Save } from "lucide-react";
 import { desktopApi, isTauriRuntime, type SchoolSettings } from "../lib/tauri";
 import { useAppStore } from "../store/appStore";
 
@@ -27,6 +27,7 @@ export function SchoolSetupPage() {
   const [status, setStatus] = useState<"idle" | "saving" | "saved" | "error">("idle");
   const [message, setMessage] = useState("");
   const setSchool = useAppStore((state) => state.setSchool);
+  const databasePath = useAppStore((state) => state.databasePath);
 
   function update<Key extends keyof SchoolSettings>(key: Key, value: SchoolSettings[Key]) {
     setSettings((current) => ({ ...current, [key]: value }));
@@ -63,11 +64,35 @@ export function SchoolSetupPage() {
       if (!isTauriRuntime()) {
         setStatus("error"); setMessage("إنشاء قاعدة البيانات متاح داخل تطبيق سطح المكتب فقط."); return;
       }
-      const result = await desktopApi.createSchoolDatabase({ ...settings, schoolName: settings.schoolName.trim() });
-      setSchool(result.settings, result.path);
-      setStatus("saved"); setMessage("تم إنشاء ملف المدرسة محليًا بنجاح.");
+      const cleanSettings = { ...settings, schoolName: settings.schoolName.trim() };
+      if (databasePath) {
+        const saved = await desktopApi.saveSchoolSettings(cleanSettings);
+        setSchool(saved, databasePath);
+        setStatus("saved"); setMessage("تم حفظ إعدادات المدرسة.");
+      } else {
+        const result = await desktopApi.createSchoolDatabase(cleanSettings);
+        setSchool(result.settings, result.path);
+        setStatus("saved"); setMessage("تم إنشاء ملف المدرسة محليًا بنجاح.");
+      }
     } catch (error) {
       setStatus("error"); setMessage(typeof error === "string" ? error : "تعذر إنشاء ملف المدرسة.");
+    }
+  }
+
+  async function openExisting() {
+    setStatus("saving");
+    setMessage("");
+    try {
+      if (!isTauriRuntime()) {
+        setStatus("error"); setMessage("فتح الملفات متاح داخل تطبيق سطح المكتب فقط."); return;
+      }
+      const result = await desktopApi.openSchoolDatabase();
+      if (!result) { setStatus("idle"); return; }
+      setSettings(result.settings);
+      setSchool(result.settings, result.path);
+      setStatus("saved"); setMessage("تم فتح ملف المدرسة بنجاح.");
+    } catch (error) {
+      setStatus("error"); setMessage(typeof error === "string" ? error : "تعذر فتح ملف المدرسة.");
     }
   }
 
@@ -108,7 +133,7 @@ export function SchoolSetupPage() {
           )}
         </div>
         {message && <div role="status" className={`notice ${status}`}>{message}</div>}
-        <div className="form-actions"><button className="primary-button" disabled={status === "saving"}>{status === "saving" ? <LoaderCircle className="spin" /> : <Save />}إنشاء ملف المدرسة</button></div>
+        <div className="form-actions school-form-actions"><button className="primary-button" disabled={status === "saving"}>{status === "saving" ? <LoaderCircle className="spin" /> : <Save />}{databasePath ? "حفظ الإعدادات" : "إنشاء ملف المدرسة"}</button><button type="button" className="secondary-button" onClick={() => void openExisting()} disabled={status === "saving"}><FolderOpen />فتح ملف مدرسة</button></div>
       </form>
     </div>
   );

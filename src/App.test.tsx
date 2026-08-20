@@ -16,3 +16,14 @@ test("allows a different period count for each working day", () => {
   expect(thursdayPeriods).toHaveValue(5);
   expect(screen.getAllByLabelText(/^عدد حصص /)).toHaveLength(5);
 });
+
+test("creates and archives a grade in browser preview mode", async () => {
+  render(<MemoryRouter initialEntries={["/data"]}><App /></MemoryRouter>);
+  fireEvent.click(screen.getAllByRole("button", { name: "إضافة صف" })[0]);
+  fireEvent.change(screen.getByLabelText(/اسم الصف/), { target: { value: "الصف الأول" } });
+  fireEvent.change(screen.getByLabelText("ترتيب العرض"), { target: { value: "1" } });
+  fireEvent.click(screen.getByRole("button", { name: /^إضافة$/ }));
+  expect(await screen.findByText("الصف الأول")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "أرشفة الصف الأول" }));
+  expect(screen.queryByText("الصف الأول")).not.toBeInTheDocument();
+});

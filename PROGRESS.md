@@ -20,8 +20,6 @@ Status: complete and locally validated on macOS (Apple Silicon).
 
 ### Deferred to phase 2+
 
-- Entity CRUD and archive/restore services.
-- Audit event writes.
 - Import workflow, solver, timetable editor, substitutions, reports, exports, and backups.
 - Full critical-path Playwright test, which depends on later-phase features.
 
@@ -44,3 +42,31 @@ Status: complete and locally validated on macOS (Apple Silicon).
 
 - School setup now supports a different number of periods for each selected working day.
 - Older school settings without per-day counts are normalized to the default period count when opened.
+
+## Phase 2 — School data
+
+Status: complete and locally validated on macOS (Apple Silicon).
+
+### Completed
+
+- Added a production data-management page for grades, sections, subjects, teachers, rooms, and lesson requirements.
+- Added create and edit forms with per-field validation, duplicate-name prevention, reference selectors, loading, empty, search, error, and archived states.
+- Added archive/restore without hard-delete paths for all six entity types.
+- Added opening an existing school database and saving school settings into the active file.
+- Added typed Tauri IPC wrappers for `list_entities`, `create_entity`, `update_entity`, `archive_entity`, and `restore_entity`.
+- Added Rust-side entity and payload allowlists with `deny_unknown_fields` and static SQL per entity type.
+- Added UUID identifiers and atomic AuditLog writes for create, update, archive, and restore actions.
+- Added an in-memory browser preview; persisted operations remain exclusive to Rust/SQLite in the Tauri runtime.
+
+### Validation
+
+- `npm test`: passed (3 UI tests).
+- `cargo test --manifest-path src-tauri/Cargo.toml`: passed (6 Rust/SQLite tests).
+- `npm run test:e2e`: passed (school setup plus grade create/archive/restore flow).
+- `npm run build`: passed.
+- `npm audit`: passed with 0 known vulnerabilities.
+- `npm run tauri dev`: compiled and launched the desktop executable with the new IPC commands.
+
+### Deferred to phase 3+
+
+- CSV/XLSX parsing, mapping, validation, templates, import history, and row errors.

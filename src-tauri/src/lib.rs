@@ -1,4 +1,5 @@
 mod db;
+mod entities;
 
 use chrono::Utc;
 use rusqlite::{params, Connection};
@@ -31,6 +32,8 @@ enum AppError {
     Validation(String),
     #[error("خطأ في البيانات: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("العنصر المطلوب غير موجود.")]
+    NotFound,
 }
 
 impl Serialize for AppError {
@@ -38,7 +41,15 @@ impl Serialize for AppError {
     where
         S: serde::Serializer,
     {
-        serializer.serialize_str(&self.to_string())
+        let message = match self {
+            AppError::Database(rusqlite::Error::SqliteFailure(error, _))
+                if error.code == rusqlite::ErrorCode::ConstraintViolation =>
+            {
+                "تعذر الحفظ: توجد قيمة مكررة أو علاقة مطلوبة غير صالحة.".to_owned()
+            }
+            _ => self.to_string(),
+        };
+        serializer.serialize_str(&message)
     }
 }
 
@@ -229,6 +240,58 @@ fn save_school_settings(
     Ok(settings)
 }
 
+#[tauri::command]
+fn list_entities(
+    state: State<DatabaseState>,
+    entity_type: entities::EntityKind,
+    include_archived: bool,
+) -> Result<Vec<entities::EntityRecord>, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    entities::list(&connection, entity_type, include_archived)
+}
+
+#[tauri::command]
+fn create_entity(
+    state: State<DatabaseState>,
+    entity_type: entities::EntityKind,
+    payload: serde_json::Value,
+) -> Result<entities::EntityRecord, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    entities::create(&mut connection, entity_type, payload)
+}
+
+#[tauri::command]
+fn update_entity(
+    state: State<DatabaseState>,
+    entity_type: entities::EntityKind,
+    id: String,
+    payload: serde_json::Value,
+) -> Result<entities::EntityRecord, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    entities::update(&mut connection, entity_type, &id, payload)
+}
+
+#[tauri::command]
+fn archive_entity(
+    state: State<DatabaseState>,
+    entity_type: entities::EntityKind,
+    id: String,
+    reason: Option<String>,
+) -> Result<entities::EntityRecord, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    entities::set_archived(&mut connection, entity_type, &id, reason, true)
+}
+
+#[tauri::command]
+fn restore_entity(
+    state: State<DatabaseState>,
+    entity_type: entities::EntityKind,
+    id: String,
+) -> Result<entities::EntityRecord, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    entities::set_archived(&mut connection, entity_type, &id, None, false)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -237,7 +300,12 @@ pub fn run() {
             create_school_database,
             open_school_database,
             get_school_settings,
-            save_school_settings
+            save_school_settings,
+            list_entities,
+            create_entity,
+            update_entity,
+            archive_entity,
+            restore_entity
         ])
         .run(tauri::generate_context!())
         .expect("error while running AI Jadwali Desktop");
