@@ -1,0 +1,55 @@
+name: Windows Installers
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: windows-installers-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-windows-installers:
+    name: Build EXE and MSI
+    runs-on: windows-latest
+    timeout-minutes: 60
+
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: Install exact frontend dependencies
+        run: npm ci
+
+      - name: Verify release metadata
+        run: npm run release:verify
+
+      - name: Run frontend and Rust checks
+        run: npm run check
+
+      - name: Audit frontend dependencies
+        run: npm audit
+
+      - name: Build Windows installers
+        run: npm run bundle:windows
+
+      - name: Upload EXE and MSI
+        uses: actions/upload-artifact@v4
+        with:
+          name: AI-Jadwali-Desktop-1.0.0-Windows-x64
+          if-no-files-found: error
+          retention-days: 14
+          path: |
+            src-tauri/target/release/bundle/nsis/*.exe
+            src-tauri/target/release/bundle/msi/*.msi

@@ -180,6 +180,7 @@ Status: packaging configuration complete; macOS bundle validated; Windows instal
 - Configured Windows NSIS/MSI packaging, current-user installation, LZMA compression, offline WebView2 installation, and downgrade prevention.
 - Added repeatable macOS and Windows bundle scripts plus an automated release-metadata verifier.
 - Added a guarded PowerShell pipeline for clean Windows builds, tests, audits, and installer generation.
+- Added a manual GitHub Actions Windows runner that builds and uploads both `.exe` and `.msi` as a private workflow artifact without publishing a release.
 - Added Windows prerequisites, artifact locations, acceptance testing, and signing guidance in `RELEASE.md`.
 - Produced and inspected the macOS `.app` and `AI Jadwali Desktop_1.0.0_aarch64.dmg` artifacts.
 

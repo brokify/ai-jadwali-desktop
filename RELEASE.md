@@ -37,6 +37,17 @@ src-tauri\target\release\bundle\nsis\
 src-tauri\target\release\bundle\msi\
 ```
 
+## Build Windows installers from a Mac with GitHub Actions
+
+The repository includes `.github/workflows/windows-installers.yml`. It runs only when manually requested, uses a native GitHub-hosted Windows runner, and uploads the NSIS `.exe` and WiX `.msi` together as a private workflow artifact. It does not publish a public release.
+
+1. Create an empty GitHub repository.
+2. Add it as this repository's remote and push `main`.
+3. Open **Actions → Windows Installers → Run workflow**.
+4. When the job finishes, download `AI-Jadwali-Desktop-1.0.0-Windows-x64` from the run's **Artifacts** section.
+
+The artifact is retained for 14 days. The workflow needs no application secrets because this first test build is unsigned. Configure code signing before external distribution.
+
 ## macOS verification build
 
 On macOS with Xcode Command Line Tools:
