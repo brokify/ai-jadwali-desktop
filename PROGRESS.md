@@ -39,3 +39,8 @@ Status: complete and locally validated on macOS (Apple Silicon).
 - `npm run test:e2e`: passed (1 Playwright navigation flow).
 - `npm audit`: passed with 0 known vulnerabilities.
 - `npm run tauri dev`: compiled and launched the desktop executable successfully.
+
+### Phase 1 refinements
+
+- School setup now supports a different number of periods for each selected working day.
+- Older school settings without per-day counts are normalized to the default period count when opened.

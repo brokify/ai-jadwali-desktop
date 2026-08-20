@@ -5,6 +5,7 @@ export type SchoolSettings = {
   academicYear: string;
   workingDays: string[];
   periodsPerDay: number;
+  periodsByDay: Record<string, number>;
   periodDurationMinutes: number;
   dayStartTime: string;
   language: "ar" | "en";

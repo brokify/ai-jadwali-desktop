@@ -3,11 +3,21 @@ mod db;
 use chrono::Utc;
 use rusqlite::{params, Connection};
 use serde::{Deserialize, Serialize};
-use std::{path::PathBuf, sync::Mutex};
+use std::{collections::BTreeMap, path::PathBuf, sync::Mutex};
 use tauri::{Manager, State};
 use thiserror::Error;
 
 struct DatabaseState(Mutex<Option<PathBuf>>);
+
+const WEEK_DAYS: [&str; 7] = [
+    "الأحد",
+    "الاثنين",
+    "الثلاثاء",
+    "الأربعاء",
+    "الخميس",
+    "الجمعة",
+    "السبت",
+];
 
 #[derive(Debug, Error)]
 enum AppError {
@@ -39,6 +49,8 @@ struct SchoolSettings {
     academic_year: String,
     working_days: Vec<String>,
     periods_per_day: u8,
+    #[serde(default)]
+    periods_by_day: BTreeMap<String, u8>,
     period_duration_minutes: u16,
     day_start_time: String,
     language: String,
@@ -65,6 +77,27 @@ fn validate_settings(settings: &SchoolSettings) -> Result<(), AppError> {
             "عدد الحصص يجب أن يكون بين 1 و16".into(),
         ));
     }
+    if settings
+        .working_days
+        .iter()
+        .any(|day| !WEEK_DAYS.contains(&day.as_str()))
+    {
+        return Err(AppError::Validation("يوجد يوم دوام غير صالح".into()));
+    }
+    let mut unique_days = settings.working_days.clone();
+    unique_days.sort();
+    unique_days.dedup();
+    if unique_days.len() != settings.working_days.len() {
+        return Err(AppError::Validation("لا يمكن تكرار يوم الدوام".into()));
+    }
+    for day in &settings.working_days {
+        let periods = settings.periods_by_day.get(day).copied().unwrap_or(0);
+        if !(1..=16).contains(&periods) {
+            return Err(AppError::Validation(format!(
+                "عدد حصص {day} يجب أن يكون بين 1 و16"
+            )));
+        }
+    }
     if !(10..=180).contains(&settings.period_duration_minutes) {
         return Err(AppError::Validation(
             "مدة الحصة يجب أن تكون بين 10 و180 دقيقة".into(),
@@ -74,6 +107,19 @@ fn validate_settings(settings: &SchoolSettings) -> Result<(), AppError> {
         return Err(AppError::Validation("اللغة غير مدعومة".into()));
     }
     Ok(())
+}
+
+fn normalize_settings(mut settings: SchoolSettings) -> SchoolSettings {
+    settings
+        .periods_by_day
+        .retain(|day, _| settings.working_days.contains(day));
+    for day in &settings.working_days {
+        settings
+            .periods_by_day
+            .entry(day.clone())
+            .or_insert(settings.periods_per_day);
+    }
+    settings
 }
 
 fn slug(value: &str) -> String {
@@ -109,7 +155,7 @@ fn load_settings(connection: &Connection) -> Result<SchoolSettings, AppError> {
         [],
         |row| row.get(0),
     )?;
-    Ok(serde_json::from_str(&json)?)
+    Ok(normalize_settings(serde_json::from_str(&json)?))
 }
 
 fn current_path(state: &State<DatabaseState>) -> Result<PathBuf, AppError> {
@@ -127,6 +173,7 @@ fn create_school_database(
     state: State<DatabaseState>,
     settings: SchoolSettings,
 ) -> Result<SchoolDatabase, AppError> {
+    let settings = normalize_settings(settings);
     validate_settings(&settings)?;
     let directory = app
         .path()
@@ -175,6 +222,7 @@ fn save_school_settings(
     state: State<DatabaseState>,
     settings: SchoolSettings,
 ) -> Result<SchoolSettings, AppError> {
+    let settings = normalize_settings(settings);
     validate_settings(&settings)?;
     let connection = db::initialize(&current_path(&state)?)?;
     store_settings(&connection, &settings)?;
@@ -193,4 +241,36 @@ pub fn run() {
         ])
         .run(tauri::generate_context!())
         .expect("error while running AI Jadwali Desktop");
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn settings() -> SchoolSettings {
+        SchoolSettings {
+            school_name: "مدرسة الاختبار".into(),
+            academic_year: "2026-2027".into(),
+            working_days: vec!["الأحد".into(), "الخميس".into()],
+            periods_per_day: 7,
+            periods_by_day: BTreeMap::from([("الأحد".into(), 7), ("الخميس".into(), 5)]),
+            period_duration_minutes: 45,
+            day_start_time: "07:30".into(),
+            language: "ar".into(),
+        }
+    }
+
+    #[test]
+    fn accepts_different_period_counts_per_working_day() {
+        assert!(validate_settings(&settings()).is_ok());
+    }
+
+    #[test]
+    fn fills_missing_day_counts_for_older_settings() {
+        let mut old_settings = settings();
+        old_settings.periods_by_day.clear();
+        let normalized = normalize_settings(old_settings);
+        assert_eq!(normalized.periods_by_day["الأحد"], 7);
+        assert_eq!(normalized.periods_by_day["الخميس"], 7);
+    }
 }
