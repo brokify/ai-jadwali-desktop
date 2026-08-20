@@ -4,7 +4,7 @@
 
 تطبيق محلي أولًا لإدارة وإنشاء الجداول الدراسية. يعمل كتطبيق Tauri دون خدمات سحابية؛ تحفظ بيانات كل مدرسة في ملف SQLite محلي داخل بيانات التطبيق.
 
-النسخة الحالية تدعم إنشاء وفتح ملف مدرسة، إعداد عدد الحصص لكل يوم، وإدارة الصفوف والشُعب والمواد والمعلمين والقاعات ومتطلبات الحصص مع الأرشفة والاستعادة وسجل تدقيق محلي.
+النسخة الحالية تدعم إنشاء وفتح ملف مدرسة، إعداد عدد الحصص لكل يوم، وإدارة الصفوف والشُعب والمواد والمعلمين والقاعات ومتطلبات الحصص مع الأرشفة والاستعادة. كما تدعم استيراد CSV/XLSX/XLS مع المعاينة، تعيين الأعمدة، كشف الأخطاء والتكرار، حفظ القوالب، وسجل استيراد محلي.
 
 ### المتطلبات
 
@@ -45,7 +45,7 @@ npm run tauri build
 
 A local-first desktop application for creating and managing school timetables. It runs as a Tauri app without cloud services. Each school's data is stored in a local SQLite file under the operating system's application-data directory.
 
-The current build supports creating and opening school files, per-day period counts, and CRUD management for grades, sections, subjects, teachers, rooms, and lesson requirements, including archive/restore and local audit events.
+The current build supports creating and opening school files, per-day period counts, and CRUD management for grades, sections, subjects, teachers, rooms, and lesson requirements, including archive/restore and local audit events. It also imports CSV/XLSX/XLS files with previews, column mapping, validation, duplicate detection, reusable templates, and local import history.
 
 ### Requirements
 

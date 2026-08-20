@@ -1,5 +1,6 @@
 mod db;
 mod entities;
+mod imports;
 
 use chrono::Utc;
 use rusqlite::{params, Connection};
@@ -32,6 +33,8 @@ enum AppError {
     Validation(String),
     #[error("خطأ في البيانات: {0}")]
     Json(#[from] serde_json::Error),
+    #[error("تعذر قراءة الملف: {0}")]
+    File(String),
     #[error("العنصر المطلوب غير موجود.")]
     NotFound,
 }
@@ -292,6 +295,26 @@ fn restore_entity(
     entities::set_archived(&mut connection, entity_type, &id, None, false)
 }
 
+#[tauri::command]
+fn import_parse_file() -> Result<Option<imports::ImportFile>, AppError> {
+    imports::pick_and_read_file()
+}
+
+#[tauri::command]
+fn import_commit(
+    state: State<DatabaseState>,
+    request: imports::ImportCommitRequest,
+) -> Result<imports::ImportCommitResult, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    imports::commit(&mut connection, request)
+}
+
+#[tauri::command]
+fn get_import_overview(state: State<DatabaseState>) -> Result<imports::ImportOverview, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    imports::overview(&connection)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -305,7 +328,10 @@ pub fn run() {
             create_entity,
             update_entity,
             archive_entity,
-            restore_entity
+            restore_entity,
+            import_parse_file,
+            import_commit,
+            get_import_overview
         ])
         .run(tauri::generate_context!())
         .expect("error while running AI Jadwali Desktop");

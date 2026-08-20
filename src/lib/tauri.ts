@@ -33,6 +33,28 @@ export type EntityRecord = {
   archivedReason: string | null;
 };
 
+export type ImportFile = { fileName: string; extension: string; bytesBase64: string };
+export type ImportCommitRequest = {
+  entityType: EntityKind;
+  fileName: string;
+  worksheet: string;
+  mapping: Record<string, string>;
+  templateName?: string;
+  rows: { rowNumber: number; payload: EntityFields }[];
+};
+export type ImportCommitResult = {
+  jobId: string;
+  totalRows: number;
+  importedRows: number;
+  errorRows: number;
+  errors: { rowNumber: number; message: string }[];
+};
+export type ImportOverview = {
+  jobs: { id: string; fileName: string; entityType: string; status: string; totalRows: number; importedRows: number; errorRows: number; createdAt: string }[];
+  templates: { id: string; name: string; entityType: string; mapping: Record<string, string> }[];
+  errors: { importJobId: string; rowNumber: number; message: string }[];
+};
+
 export const desktopApi = {
   createSchoolDatabase: (settings: SchoolSettings) =>
     invoke<SchoolDatabase>("create_school_database", { settings }),
@@ -50,6 +72,10 @@ export const desktopApi = {
     invoke<EntityRecord>("archive_entity", { entityType, id, reason }),
   restoreEntity: (entityType: EntityKind, id: string) =>
     invoke<EntityRecord>("restore_entity", { entityType, id }),
+  importParseFile: () => invoke<ImportFile | null>("import_parse_file"),
+  importCommit: (request: ImportCommitRequest) =>
+    invoke<ImportCommitResult>("import_commit", { request }),
+  getImportOverview: () => invoke<ImportOverview>("get_import_overview"),
 };
 
 export function isTauriRuntime() {

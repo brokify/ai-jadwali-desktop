@@ -6,6 +6,7 @@ export default defineConfig({
   plugins: [react(), tailwindcss()],
   clearScreen: false,
   server: { port: 1420, strictPort: true },
+  build: { chunkSizeWarningLimit: 550 },
   envPrefix: ["VITE_", "TAURI_ENV_*"],
   test: {
     globals: true,

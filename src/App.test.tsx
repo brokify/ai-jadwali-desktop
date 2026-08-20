@@ -27,3 +27,12 @@ test("creates and archives a grade in browser preview mode", async () => {
   fireEvent.click(screen.getByRole("button", { name: "أرشفة الصف الأول" }));
   expect(screen.queryByText("الصف الأول")).not.toBeInTheDocument();
 });
+
+test("previews a spreadsheet and flags duplicate import rows", async () => {
+  render(<MemoryRouter initialEntries={["/import"]}><App /></MemoryRouter>);
+  fireEvent.click(await screen.findByRole("button", { name: "تحميل نموذج تجريبي" }));
+  expect(await screen.findByText("التعيين مكتمل")).toBeInTheDocument();
+  expect(screen.getByText("صف مكرر")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("button", { name: "استيراد 3 صف" }));
+  expect(await screen.findByText("تم قبول 2 صف، وتسجيل 1 خطأ.")).toBeInTheDocument();
+});

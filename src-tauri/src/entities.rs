@@ -42,6 +42,10 @@ impl EntityKind {
             Self::LessonRequirements => "lesson_requirement",
         }
     }
+
+    pub(crate) fn key(self) -> &'static str {
+        self.table()
+    }
 }
 
 #[derive(Debug, Serialize)]
