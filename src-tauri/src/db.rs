@@ -2,6 +2,7 @@ use rusqlite::Connection;
 use std::path::Path;
 
 const INITIAL_MIGRATION: &str = include_str!("../migrations/001_initial.sql");
+const USERS_MIGRATION: &str = include_str!("../migrations/002_users.sql");
 
 pub fn initialize(path: &Path) -> rusqlite::Result<Connection> {
     let mut connection = Connection::open(path)?;
@@ -9,6 +10,7 @@ pub fn initialize(path: &Path) -> rusqlite::Result<Connection> {
     connection.pragma_update(None, "journal_mode", "WAL")?;
     let transaction = connection.transaction()?;
     transaction.execute_batch(INITIAL_MIGRATION)?;
+    transaction.execute_batch(USERS_MIGRATION)?;
     transaction.commit()?;
     Ok(connection)
 }
@@ -40,6 +42,8 @@ mod tests {
             "audit_logs",
             "timetable_change_sets",
             "app_settings",
+            "user_roles",
+            "users",
         ];
         for table in expected {
             let count: i64 = connection

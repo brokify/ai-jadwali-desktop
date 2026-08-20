@@ -128,6 +128,12 @@ export type FileOperationResult = { fileName: string; sizeBytes: number };
 export type BackupOverview = { currentFileName: string; automaticBackups: { fileName: string; sizeBytes: number; modifiedAt: string | null }[] };
 export type AppPreferences = { confirmBeforePublish: boolean; defaultExportView: "section" | "teacher" | "room"; compactTimetable: boolean };
 export type AuditRecord = { id: string; action: string; entityType: string; createdAt: string };
+export type UserPermission = "manage_school" | "manage_data" | "manage_constraints" | "generate_timetables" | "manage_timetables" | "manage_substitutions" | "view_reports" | "export_reports" | "manage_backups" | "manage_users" | "manage_settings";
+export type UserRole = { id: string; name: string; description: string | null; permissions: UserPermission[]; isSystem: boolean; userCount: number; archivedAt: string | null };
+export type LocalUser = { id: string; fullName: string; username: string; email: string | null; phone: string | null; employeeNumber: string | null; roleId: string; roleName: string; notes: string | null; isActive: boolean; createdAt: string; updatedAt: string };
+export type UserOverview = { users: LocalUser[]; roles: UserRole[]; totalUsers: number; activeUsers: number; administratorCount: number };
+export type LocalUserInput = { id?: string; fullName: string; username: string; email?: string; phone?: string; employeeNumber?: string; roleId: string; notes?: string };
+export type UserRoleInput = { id?: string; name: string; description?: string; permissions: UserPermission[] };
 
 export const desktopApi = {
   createSchoolDatabase: (settings: SchoolSettings) =>
@@ -174,6 +180,11 @@ export const desktopApi = {
   getAppPreferences: () => invoke<AppPreferences>("get_app_preferences"),
   saveAppPreferences: (preferences: AppPreferences) => invoke<AppPreferences>("save_app_preferences", { preferences }),
   getAuditLogs: () => invoke<AuditRecord[]>("get_audit_logs"),
+  getUserOverview: () => invoke<UserOverview>("get_user_overview"),
+  saveLocalUser: (input: LocalUserInput) => invoke<LocalUser>("save_local_user", { input }),
+  setLocalUserActive: (id: string, active: boolean) => invoke<LocalUser>("set_local_user_active", { id, active }),
+  saveUserRole: (input: UserRoleInput) => invoke<UserRole>("save_user_role", { input }),
+  archiveUserRole: (id: string) => invoke<void>("archive_user_role", { id }),
 };
 
 export function isTauriRuntime() {

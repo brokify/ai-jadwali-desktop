@@ -6,6 +6,7 @@ mod preferences;
 mod reports;
 mod substitutions;
 mod timetables;
+mod users;
 
 use chrono::Utc;
 use rusqlite::{params, Connection};
@@ -531,6 +532,46 @@ fn get_audit_logs(state: State<DatabaseState>) -> Result<Vec<preferences::AuditR
     preferences::audit_logs(&connection)
 }
 
+#[tauri::command]
+fn get_user_overview(state: State<DatabaseState>) -> Result<users::UserOverview, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    users::overview(&connection)
+}
+
+#[tauri::command]
+fn save_local_user(
+    state: State<DatabaseState>,
+    input: users::UserInput,
+) -> Result<users::LocalUser, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    users::save_user(&mut connection, input)
+}
+
+#[tauri::command]
+fn set_local_user_active(
+    state: State<DatabaseState>,
+    id: String,
+    active: bool,
+) -> Result<users::LocalUser, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    users::set_user_active(&mut connection, &id, active)
+}
+
+#[tauri::command]
+fn save_user_role(
+    state: State<DatabaseState>,
+    input: users::RoleInput,
+) -> Result<users::UserRole, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    users::save_role(&mut connection, input)
+}
+
+#[tauri::command]
+fn archive_user_role(state: State<DatabaseState>, id: String) -> Result<(), AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    users::archive_role(&mut connection, &id)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -571,7 +612,12 @@ pub fn run() {
             open_data_folder,
             get_app_preferences,
             save_app_preferences,
-            get_audit_logs
+            get_audit_logs,
+            get_user_overview,
+            save_local_user,
+            set_local_user_active,
+            save_user_role,
+            archive_user_role
         ])
         .run(tauri::generate_context!())
         .expect("error while running AI Jadwali Desktop");

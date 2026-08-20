@@ -4,7 +4,9 @@
 
 تطبيق محلي أولًا لإدارة وإنشاء الجداول الدراسية. يعمل كتطبيق Tauri دون خدمات سحابية؛ تحفظ بيانات كل مدرسة في ملف SQLite محلي داخل بيانات التطبيق.
 
-النسخة الحالية تدعم إنشاء وفتح ملف مدرسة، إعداد عدد الحصص لكل يوم، وإدارة البيانات واستيراد CSV/XLSX/XLS. كما تتضمن قيود عدم التوفر والتفضيلات، محرك جدولة محليًا خلف `SolverAdapter`، تشخيص التعارضات، نسخ جداول محلية، شبكة أسبوعية حسب الشعبة أو المعلم أو القاعة، نقل الحصص، undo/redo، النشر والأرشفة والاستعادة. وتكتمل الدورة بإدارة البدائل، تقارير حمل المعلمين واستخدام القاعات، تصدير PDF وCSV والطباعة، والنسخ الاحتياطي والاستعادة الآمنة.
+النسخة الحالية تدعم إنشاء وفتح ملف مدرسة، إعداد عدد الحصص لكل يوم، وإدارة البيانات واستيراد CSV/XLSX/XLS. كما تتضمن قيود عدم التوفر والتفضيلات، محرك جدولة محليًا خلف `SolverAdapter`، تشخيص التعارضات، نسخ جداول محلية، شبكة أسبوعية حسب الشعبة أو المعلم أو القاعة، نقل الحصص، undo/redo، النشر والأرشفة والاستعادة. وتكتمل الدورة بإدارة البدائل، تقارير حمل المعلمين واستخدام القاعات، تصدير PDF وCSV والطباعة، والنسخ الاحتياطي والاستعادة الآمنة، وإدارة ملفات المستخدمين والأدوار والصلاحيات محليًا.
+
+إدارة المستخدمين تشغيلية داخل ملف المدرسة ولا تتضمن تسجيل دخول أو كلمات مرور أو حسابات سحابية. الأدوار والصلاحيات مهيأة لحوكمة بيانات المدرسة المحلية مع سجل تدقيق لكل تغيير.
 
 ### المتطلبات
 
@@ -45,7 +47,9 @@ npm run tauri build
 
 A local-first desktop application for creating and managing school timetables. It runs as a Tauri app without cloud services. Each school's data is stored in a local SQLite file under the operating system's application-data directory.
 
-The current build supports school files, per-day period counts, local data management, and CSV/XLSX/XLS imports. It also includes availability and preference constraints, a local solver behind `SolverAdapter`, conflict diagnostics, persisted timetable versions, weekly section/teacher/room views, validated lesson moves, undo/redo, publish/archive states, and version reverts. The workflow is completed by absence substitutions, teacher-load and room-usage reports, PDF/CSV/print export, and validated backup and restore.
+The current build supports school files, per-day period counts, local data management, and CSV/XLSX/XLS imports. It also includes availability and preference constraints, a local solver behind `SolverAdapter`, conflict diagnostics, persisted timetable versions, weekly section/teacher/room views, validated lesson moves, undo/redo, publish/archive states, and version reverts. The workflow is completed by absence substitutions, teacher-load and room-usage reports, PDF/CSV/print export, validated backup and restore, and local user/role/permission management.
+
+User management is operational governance stored inside the school file; it does not add login, passwords, cloud identities, or remote authentication. Every user and role change is recorded in the local audit log.
 
 ### Requirements
 

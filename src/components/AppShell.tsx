@@ -11,6 +11,7 @@ import {
   Settings,
   ShieldCheck,
   Sparkles,
+  UsersRound,
   X,
 } from "lucide-react";
 import { useState } from "react";
@@ -27,6 +28,7 @@ const navigation = [
   ["/reports", "التقارير", BarChart3],
   ["/import", "الاستيراد", FileInput],
   ["/backup", "النسخ الاحتياطي", ArchiveRestore],
+  ["/users", "المستخدمون", UsersRound],
   ["/settings", "الإعدادات", Settings],
 ] as const;
 

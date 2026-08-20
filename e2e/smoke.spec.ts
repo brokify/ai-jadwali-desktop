@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("critical local workflow reaches export and backup", async ({ page }) => {
+test("critical local workflow reaches export, backup, and user management", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "نظرة عامة" })).toBeVisible();
   await page.getByRole("link", { name: "إعداد المدرسة" }).first().click();
@@ -51,4 +51,12 @@ test("critical local workflow reaches export and backup", async ({ page }) => {
   await page.getByRole("link", { name: "النسخ الاحتياطي" }).click();
   await page.getByRole("button", { name: "إنشاء نسخة الآن" }).click();
   await expect(page.getByText(/تم إنشاء النسخة الاحتياطية/)).toBeVisible();
+
+  await page.getByRole("link", { name: "المستخدمون" }).click();
+  await expect(page.getByRole("heading", { name: "إدارة المستخدمين" })).toBeVisible();
+  await page.getByRole("button", { name: "إضافة مستخدم" }).click();
+  await page.getByLabel("الاسم الكامل").fill("سارة محمد");
+  await page.getByLabel("اسم المستخدم").fill("sara.local");
+  await page.getByRole("button", { name: "حفظ المستخدم" }).click();
+  await expect(page.getByText("سارة محمد")).toBeVisible();
 });

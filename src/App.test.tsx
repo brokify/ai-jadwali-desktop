@@ -57,3 +57,18 @@ test("saves local application preferences", async () => {
   fireEvent.click(await screen.findByRole("button", { name: "حفظ التفضيلات" }));
   expect(await screen.findByText("حُفظت تفضيلات التطبيق محليًا.")).toBeInTheDocument();
 });
+
+test("adds a local user and a custom role", async () => {
+  render(<MemoryRouter initialEntries={["/users"]}><App /></MemoryRouter>);
+  fireEvent.click(await screen.findByRole("button", { name: "إضافة مستخدم" }));
+  fireEvent.change(screen.getByLabelText("الاسم الكامل"), { target: { value: "سارة محمد" } });
+  fireEvent.change(screen.getByLabelText("اسم المستخدم"), { target: { value: "sara.local" } });
+  fireEvent.click(screen.getByRole("button", { name: "حفظ المستخدم" }));
+  expect(await screen.findByText("سارة محمد")).toBeInTheDocument();
+
+  fireEvent.click(screen.getByRole("button", { name: "الأدوار والصلاحيات" }));
+  fireEvent.click(screen.getByRole("button", { name: "دور مخصص" }));
+  fireEvent.change(screen.getByLabelText("اسم الدور"), { target: { value: "مراجع محلي" } });
+  fireEvent.click(screen.getByRole("button", { name: "حفظ الدور" }));
+  expect(await screen.findByText("مراجع محلي")).toBeInTheDocument();
+});

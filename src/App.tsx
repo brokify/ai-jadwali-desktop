@@ -13,6 +13,7 @@ const SubstitutionsPage = lazy(() => import("./pages/SubstitutionsPage").then((m
 const ReportsPage = lazy(() => import("./pages/ReportsPage").then((module) => ({ default: module.ReportsPage })));
 const BackupPage = lazy(() => import("./pages/BackupPage").then((module) => ({ default: module.BackupPage })));
 const SettingsPage = lazy(() => import("./pages/SettingsPage").then((module) => ({ default: module.SettingsPage })));
+const UsersPage = lazy(() => import("./pages/UsersPage").then((module) => ({ default: module.UsersPage })));
 
 export function App() {
   return (
@@ -28,6 +29,7 @@ export function App() {
         <Route path="reports" element={<Suspense fallback={<div className="panel route-loading">جارٍ حساب التقارير…</div>}><ReportsPage /></Suspense>} />
         <Route path="import" element={<Suspense fallback={<div className="panel route-loading">جارٍ تحميل أدوات الاستيراد…</div>}><ImportPage /></Suspense>} />
         <Route path="backup" element={<Suspense fallback={<div className="panel route-loading">جارٍ تحميل النسخ الاحتياطي…</div>}><BackupPage /></Suspense>} />
+        <Route path="users" element={<Suspense fallback={<div className="panel route-loading">جارٍ تحميل المستخدمين…</div>}><UsersPage /></Suspense>} />
         <Route path="settings" element={<Suspense fallback={<div className="panel route-loading">جارٍ تحميل الإعدادات…</div>}><SettingsPage /></Suspense>} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Route>

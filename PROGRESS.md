@@ -142,3 +142,28 @@ Status: complete and locally validated on macOS (Apple Silicon).
 - `npm run build`: passed with route-specific bundles.
 - `npm audit`: passed with 0 known vulnerabilities.
 - `npm run tauri dev`: compiled and launched the final desktop executable successfully.
+
+## Enhancement — Local user management
+
+Status: complete and locally validated on macOS (Apple Silicon).
+
+### Completed
+
+- Added an ordered SQLite migration for local users and roles that upgrades existing school files without rewriting prior migrations.
+- Added three protected roles: system administrator, timetable coordinator, and report viewer.
+- Added custom roles with an explicit allowlist of eleven school-operation permissions.
+- Added create/edit, search, status filtering, role assignment, activation, and non-destructive deactivation for local users.
+- Added safeguards requiring the first user to be an administrator and preventing deactivation of the last active administrator.
+- Prevented demoting the last active administrator or removing the final effective management permission through a custom-role edit.
+- Added safeguards preventing system-role edits and preventing role archival while users remain assigned.
+- Added local audit events for every user and role mutation without external logging.
+- Added responsive Arabic RTL desktop and mobile interfaces, including loading, empty, success, validation, and error states.
+- Kept the feature local and operational: no passwords, login, cloud accounts, networking, or authentication service were introduced.
+
+### Validation
+
+- `npm test`: passed (15 unit and UI tests).
+- `cargo test --manifest-path src-tauri/Cargo.toml`: passed (16 Rust/SQLite tests).
+- `npm run test:e2e`: passed (critical path including local user creation).
+- `npm run build`: passed with the user-management page in a lazy route bundle.
+- `npm run tauri dev`: compiled and launched the desktop executable with the new migration and IPC commands.
