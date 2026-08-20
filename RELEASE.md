@@ -39,7 +39,7 @@ src-tauri\target\release\bundle\msi\
 
 ## Build Windows installers from a Mac with GitHub Actions
 
-The repository includes `.github/workflows/windows-installers.yml`. It runs only when manually requested, uses a native GitHub-hosted Windows runner, and uploads the NSIS `.exe` and WiX `.msi` together as a private workflow artifact. It does not publish a public release.
+The repository includes `.github/workflows/windows-installers.yml`. It runs when manually requested or when a `windows-v*` build tag is pushed, uses a native GitHub-hosted Windows runner, and uploads the NSIS `.exe` and WiX `.msi` together as a private workflow artifact. It does not publish a public release.
 
 1. Create an empty GitHub repository.
 2. Add it as this repository's remote and push `main`.

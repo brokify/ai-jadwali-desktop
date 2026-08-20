@@ -2,6 +2,9 @@ name: Windows Installers
 
 on:
   workflow_dispatch:
+  push:
+    tags:
+      - "windows-v*"
 
 permissions:
   contents: read
