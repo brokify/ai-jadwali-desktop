@@ -1,4 +1,5 @@
 import { invoke } from "@tauri-apps/api/core";
+import type { ScheduleConstraint, ScheduleDay, SolverRequirement, SolverTeacher, TimetableEntry } from "../features/scheduler/types";
 
 export type SchoolSettings = {
   schoolName: string;
@@ -55,6 +56,42 @@ export type ImportOverview = {
   errors: { importJobId: string; rowNumber: number; message: string }[];
 };
 
+export type LookupItem = { id: string; name: string };
+export type SolverContext = {
+  days: ScheduleDay[];
+  requirements: SolverRequirement[];
+  teachers: SolverTeacher[];
+  constraints: ScheduleConstraint[];
+  sections: LookupItem[];
+  subjects: LookupItem[];
+  teacherNames: LookupItem[];
+  rooms: LookupItem[];
+};
+export type ConstraintInput = Omit<ScheduleConstraint, "id"> & { id?: string };
+export type TimetableVersion = {
+  id: string;
+  name: string;
+  status: "draft" | "published" | "archived";
+  solverStatus: "success" | "partial" | "failed" | null;
+  penaltyScore: number | null;
+  sourceVersionId: string | null;
+  createdAt: string;
+};
+export type TimetableOverview = {
+  versions: TimetableVersion[];
+  selectedVersionId: string | null;
+  entries: TimetableEntry[];
+  canUndo: boolean;
+  canRedo: boolean;
+};
+export type GenerateTimetableRequest = {
+  name: string;
+  solverStatus: "success" | "partial" | "failed";
+  penaltyScore: number;
+  entries: Omit<TimetableEntry, "id">[];
+};
+export type MoveLessonRequest = { versionId: string; entryId: string; weekday: number; periodIndex: number };
+
 export const desktopApi = {
   createSchoolDatabase: (settings: SchoolSettings) =>
     invoke<SchoolDatabase>("create_school_database", { settings }),
@@ -76,6 +113,18 @@ export const desktopApi = {
   importCommit: (request: ImportCommitRequest) =>
     invoke<ImportCommitResult>("import_commit", { request }),
   getImportOverview: () => invoke<ImportOverview>("get_import_overview"),
+  getSolverContext: () => invoke<SolverContext>("get_solver_context"),
+  listConstraints: () => invoke<ScheduleConstraint[]>("list_constraints"),
+  saveConstraint: (input: ConstraintInput) => invoke<ScheduleConstraint>("save_constraint", { input }),
+  archiveConstraint: (id: string) => invoke<void>("archive_constraint", { id }),
+  generateTimetable: (request: GenerateTimetableRequest) => invoke<TimetableOverview>("generate_timetable", { request }),
+  getTimetableOverview: (versionId?: string) => invoke<TimetableOverview>("get_timetable_overview", { versionId }),
+  validateLessonMove: (request: MoveLessonRequest) => invoke<{ valid: boolean; message: string }>("validate_lesson_move", { request }),
+  moveLesson: (request: MoveLessonRequest) => invoke<TimetableOverview>("move_lesson", { request }),
+  undoTimetableChange: (versionId: string) => invoke<TimetableOverview>("undo_timetable_change", { versionId }),
+  redoTimetableChange: (versionId: string) => invoke<TimetableOverview>("redo_timetable_change", { versionId }),
+  revertTimetableVersion: (sourceVersionId: string, name: string) => invoke<TimetableOverview>("revert_timetable_version", { sourceVersionId, name }),
+  setTimetableStatus: (versionId: string, status: TimetableVersion["status"]) => invoke<TimetableOverview>("set_timetable_status", { versionId, status }),
 };
 
 export function isTauriRuntime() {

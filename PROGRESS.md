@@ -20,14 +20,14 @@ Status: complete and locally validated on macOS (Apple Silicon).
 
 ### Deferred to later phases
 
-- Solver, timetable editor, substitutions, reports, exports, and backups.
+- Substitutions, reports, exports, and backups.
 - Full critical-path Playwright test, which depends on later-phase features.
 
 ### Known issues / decisions
 
 - The initial database is created under the OS application-data directory. User-selected export and backup destinations are deferred to the backup phase.
 - Opening an existing school database uses a Rust-native file picker and accepts only `.db` files.
-- Scheduling remains a pure TypeScript module planned for phase 4 behind `SolverAdapter`.
+- Scheduling is implemented as a pure TypeScript module behind `SolverAdapter`; persistence and defensive validation remain in Rust.
 
 ### Validation
 
@@ -91,6 +91,33 @@ Status: complete and locally validated on macOS (Apple Silicon).
 - `npm audit`: passed with 0 known vulnerabilities.
 - `npm run tauri dev`: compiled and launched the desktop executable with the import IPC commands.
 
-### Deferred to phase 4+
+## Phase 4 — Solver and timetables
 
-- Local scheduling solver, constraint checks, diagnostics, and generated timetable persistence.
+Status: complete and locally validated on macOS (Apple Silicon).
+
+### Completed
+
+- Added a testable `SolverAdapter` contract with a deterministic local backtracking/heuristic implementation.
+- Added hard collision checks for sections, teachers, and rooms, teacher daily/weekly limits, and teacher/room unavailability.
+- Added soft penalties for spreading a subject across days and avoiding the final period.
+- Added `success`, `partial`, and `failed` results with Arabic conflict explanations and bounded search nodes.
+- Added a constraints page for hard unavailability and soft scheduling preferences.
+- Added Rust-side constraint payload allowlists, reference checks, working-slot validation, archive paths, and audit events.
+- Added local timetable version persistence with defensive revalidation of every generated entry.
+- Added a weekly RTL grid filtered by section, teacher, or room, including days with different period counts.
+- Added drag/click lesson moves with immediate validation, session feedback, persisted undo/redo, draft/published/archived states, and revert-to-new-draft.
+- Added browser-only sample scheduling data for UI preview without weakening the Tauri/SQLite persistence boundary.
+- Lazy-loaded all phase-four pages into small route-specific bundles.
+
+### Validation
+
+- `npm test`: passed (12 solver, import, and UI tests).
+- `cargo test --manifest-path src-tauri/Cargo.toml`: passed (11 Rust/SQLite tests).
+- `npm run test:e2e`: passed (school setup, data lifecycle, import, generation, valid lesson move, and undo availability).
+- `npm run build`: passed.
+- `npm audit`: passed with 0 known vulnerabilities.
+- `npm run tauri dev`: compiled and launched the desktop executable with the scheduling IPC commands.
+
+### Deferred to phase 5
+
+- Substitutions, reports, PDF/CSV/print exports, backup/restore, and final desktop polish.

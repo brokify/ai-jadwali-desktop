@@ -1,6 +1,6 @@
 import { expect, test } from "@playwright/test";
 
-test("critical local workflow configures data and imports a spreadsheet", async ({ page }) => {
+test("critical local workflow configures data, imports, and generates a timetable", async ({ page }) => {
   await page.goto("/");
   await expect(page.getByRole("heading", { name: "نظرة عامة" })).toBeVisible();
   await page.getByRole("link", { name: "إعداد المدرسة" }).first().click();
@@ -28,4 +28,18 @@ test("critical local workflow configures data and imports a spreadsheet", async 
   await expect(page.getByText("صف مكرر").first()).toBeVisible();
   await page.getByRole("button", { name: "استيراد 3 صف" }).click();
   await expect(page.getByText("تم قبول 1 صف، وتسجيل 2 خطأ.")).toBeVisible();
+
+  await page.getByRole("link", { name: "توليد الجدول" }).click();
+  await page.getByRole("button", { name: "توليد الجدول الآن" }).click();
+  await expect(page.getByText("اكتمل الجدول دون تعارضات صارمة")).toBeVisible();
+  await page.getByRole("link", { name: /فتح الجدول/ }).click();
+  await expect(page.getByRole("heading", { name: "الجداول" })).toBeVisible();
+  await page.locator(".lesson-card").first().click();
+  const targets = page.locator(".schedule-cell.target:not(:has(.lesson-card)):not(.off)");
+  for (let index = 0; index < await targets.count(); index += 1) {
+    await targets.nth(index).click();
+    if (await page.getByText(/النقل صالح/).count()) break;
+  }
+  await expect(page.getByText(/النقل صالح/)).toBeVisible();
+  await expect(page.getByRole("button", { name: "تراجع" })).toBeEnabled();
 });

@@ -36,3 +36,12 @@ test("previews a spreadsheet and flags duplicate import rows", async () => {
   fireEvent.click(screen.getByRole("button", { name: "استيراد 3 صف" }));
   expect(await screen.findByText("تم قبول 2 صف، وتسجيل 1 خطأ.")).toBeInTheDocument();
 });
+
+test("generates a local timetable and opens the weekly grid", async () => {
+  render(<MemoryRouter initialEntries={["/generate"]}><App /></MemoryRouter>);
+  fireEvent.click(await screen.findByRole("button", { name: "توليد الجدول الآن" }));
+  expect(await screen.findByText("اكتمل الجدول دون تعارضات صارمة")).toBeInTheDocument();
+  fireEvent.click(screen.getByRole("link", { name: /فتح الجدول/ }));
+  expect(await screen.findByRole("heading", { name: "الجداول" })).toBeInTheDocument();
+  expect(screen.getAllByText("الأول أ").length).toBeGreaterThan(0);
+});

@@ -1,6 +1,7 @@
 mod db;
 mod entities;
 mod imports;
+mod timetables;
 
 use chrono::Utc;
 use rusqlite::{params, Connection};
@@ -315,6 +316,109 @@ fn get_import_overview(state: State<DatabaseState>) -> Result<imports::ImportOve
     imports::overview(&connection)
 }
 
+#[tauri::command]
+fn get_solver_context(state: State<DatabaseState>) -> Result<timetables::SolverContext, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    timetables::context(&connection)
+}
+
+#[tauri::command]
+fn list_constraints(
+    state: State<DatabaseState>,
+) -> Result<Vec<timetables::ConstraintRecord>, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    timetables::list_constraints(&connection)
+}
+
+#[tauri::command]
+fn save_constraint(
+    state: State<DatabaseState>,
+    input: timetables::ConstraintInput,
+) -> Result<timetables::ConstraintRecord, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::save_constraint(&mut connection, input)
+}
+
+#[tauri::command]
+fn archive_constraint(state: State<DatabaseState>, id: String) -> Result<(), AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::archive_constraint(&mut connection, &id)
+}
+
+#[tauri::command]
+fn generate_timetable(
+    state: State<DatabaseState>,
+    request: timetables::GenerateRequest,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::generate(&mut connection, request)
+}
+
+#[tauri::command]
+fn get_timetable_overview(
+    state: State<DatabaseState>,
+    version_id: Option<String>,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    timetables::overview(&connection, version_id.as_deref())
+}
+
+#[tauri::command]
+fn validate_lesson_move(
+    state: State<DatabaseState>,
+    request: timetables::MoveRequest,
+) -> Result<timetables::MoveValidation, AppError> {
+    let connection = db::initialize(&current_path(&state)?)?;
+    timetables::validate_move(&connection, &request)
+}
+
+#[tauri::command]
+fn move_lesson(
+    state: State<DatabaseState>,
+    request: timetables::MoveRequest,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::move_lesson(&mut connection, request)
+}
+
+#[tauri::command]
+fn undo_timetable_change(
+    state: State<DatabaseState>,
+    version_id: String,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::undo(&mut connection, &version_id)
+}
+
+#[tauri::command]
+fn redo_timetable_change(
+    state: State<DatabaseState>,
+    version_id: String,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::redo(&mut connection, &version_id)
+}
+
+#[tauri::command]
+fn revert_timetable_version(
+    state: State<DatabaseState>,
+    source_version_id: String,
+    name: String,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::revert(&mut connection, &source_version_id, &name)
+}
+
+#[tauri::command]
+fn set_timetable_status(
+    state: State<DatabaseState>,
+    version_id: String,
+    status: String,
+) -> Result<timetables::TimetableOverview, AppError> {
+    let mut connection = db::initialize(&current_path(&state)?)?;
+    timetables::set_status(&mut connection, &version_id, &status)
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -331,7 +435,19 @@ pub fn run() {
             restore_entity,
             import_parse_file,
             import_commit,
-            get_import_overview
+            get_import_overview,
+            get_solver_context,
+            list_constraints,
+            save_constraint,
+            archive_constraint,
+            generate_timetable,
+            get_timetable_overview,
+            validate_lesson_move,
+            move_lesson,
+            undo_timetable_change,
+            redo_timetable_change,
+            revert_timetable_version,
+            set_timetable_status
         ])
         .run(tauri::generate_context!())
         .expect("error while running AI Jadwali Desktop");
